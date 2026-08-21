@@ -9,13 +9,12 @@ export default function ThankYou() {
   const handle = getInstagramHandle();
   const inInstagram = isInstagramInApp();
 
-  async function handleManyChatClick(event) {
-    event.preventDefault();
+  function handleManyChatClick() {
     const applicant = getApplicant() || {};
     const eventId = generateEventId('lead_manychat');
     const params = { content_name: 'ManyChat DM' };
     trackPixel('Lead', params, eventId);
-    await sendCapi({
+    void sendCapi({
       eventName: 'Lead',
       eventId,
       visitor_id: getVisitorId(),
@@ -25,15 +24,6 @@ export default function ThankYou() {
       last_name: applicant.last_name,
       customData: params,
     });
-    try {
-      if (window.top && window.top !== window.self) {
-        window.top.location.assign(href);
-        return;
-      }
-    } catch {
-      /* cross-origin frame */
-    }
-    window.location.assign(href);
   }
 
   return (
@@ -46,7 +36,7 @@ export default function ThankYou() {
       <p className="qualify-action">
         {inInstagram ? (
           <>
-            Tap below to shoot me a message on Instagram and book your slot. Send the word{' '}
+            Tap below to message me in Instagram and book your slot. Send the word{' '}
             <strong className="dm-keyword">{keyword}</strong> so we know you came from the application.
           </>
         ) : (
@@ -56,12 +46,20 @@ export default function ThankYou() {
           </>
         )}
       </p>
-      <a className="manychat-cta" href={href} target="_top" rel="noopener" onClick={handleManyChatClick}>
+      <a
+        className="manychat-cta"
+        href={href}
+        target={inInstagram ? '_self' : '_top'}
+        rel="noopener"
+        onClick={handleManyChatClick}
+      >
         Message me "<strong className="dm-keyword">{keyword}</strong>" to book 
       </a>
       <p className="qualify-hint">
         @{handle}
-        {inInstagram ? ' · If the chat doesn’t open, DM that word from your inbox.' : ' · Limited slots — DMs are how we lock the call.'}
+        {inInstagram
+          ? ' · If chat doesn’t open, tap and hold the button, then open in Instagram — or DM that word from your inbox.'
+          : ' · Limited slots — DMs are how we lock the call.'}
       </p>
     </section>
   );

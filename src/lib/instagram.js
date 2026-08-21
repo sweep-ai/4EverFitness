@@ -19,7 +19,7 @@ export function getManyChatHref() {
   return import.meta.env.VITE_MANYCHAT_URL || MANYCHAT_REF_URL;
 }
 
-/** Same-origin hop so Instagram’s in-app browser does not strip ?ref= */
+/** Direct ig.me URL. Instagram’s in-app browser only opens DMs on a real user tap. */
 export function getManyChatButtonHref() {
-  return '/dm.html';
+  return getManyChatHref();
 }
