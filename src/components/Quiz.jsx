@@ -45,7 +45,7 @@ const QUESTIONS = [
   },
   {
     id: 'q4_goal',
-    prompt: 'What is your primary goal over the next 6 months?',
+    prompt: 'What is your primary goal over the next 90 days?',
     options: [
       { key: 'A', label: 'Lose 30-50lbs of belly fat, get more toned, and become the healthy confident version of myself' },
       { key: 'B', label: 'Rebuild my discipline, structure, and consistency' },
@@ -55,7 +55,7 @@ const QUESTIONS = [
   },
   {
     id: 'q5_commitment',
-    prompt: 'How serious are you about changing your life in the next 6 months?',
+    prompt: 'How serious are you about changing your life in the next 90 days?',
     options: [
       { key: 'A', label: "I'm all in. Willing to do whatever it takes and ready to execute." },
       { key: 'B', label: "I'm serious but need structure and accountability." },
