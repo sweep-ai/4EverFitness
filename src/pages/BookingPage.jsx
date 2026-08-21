@@ -4,7 +4,9 @@ import CalendlyEmbed from '../components/CalendlyEmbed.jsx';
 import Footer from '../components/Footer.jsx';
 import Header from '../components/Header.jsx';
 import ScrollingBanner from '../components/ScrollingBanner.jsx';
-import { getSessionId, trackEvent } from '../lib/sweep';
+import { getApplicant } from '../lib/applicant';
+import { dualFire, getLeadEventId, setScheduleEventId } from '../lib/meta';
+import { getSessionId, getVisitorId, trackEvent } from '../lib/sweep';
 
 const BOOKING_VIEW = import.meta.env.VITE_EVT_BOOKING_VIEW || 'booking_page_view';
 const SCHEDULE_EVENT = import.meta.env.VITE_EVT_SCHEDULE || 'call_scheduled';
@@ -14,11 +16,37 @@ export default function BookingPage() {
 
   useEffect(() => {
     trackEvent(BOOKING_VIEW, { page_id: 'booking' });
+    const applicant = getApplicant();
+    const leadEventId = getLeadEventId();
+    if (leadEventId) {
+      dualFire('Lead', {
+        eventId: leadEventId,
+        visitor_id: getVisitorId(),
+        email: applicant?.email,
+        phone: applicant?.phone,
+        first_name: applicant?.first_name,
+        last_name: applicant?.last_name,
+        pixelParams: { content_name: 'PrimeShift booking' },
+        customData: { content_name: 'PrimeShift booking' },
+      });
+    }
   }, []);
 
   const handleScheduled = useCallback(() => {
     const sessionId = getSessionId();
+    const applicant = getApplicant();
+    const scheduleEventId = setScheduleEventId();
     trackEvent(SCHEDULE_EVENT, { page_id: 'booking' }, `${SCHEDULE_EVENT}_${sessionId}`);
+    dualFire('Schedule', {
+      eventId: scheduleEventId,
+      visitor_id: getVisitorId(),
+      email: applicant?.email,
+      phone: applicant?.phone,
+      first_name: applicant?.first_name,
+      last_name: applicant?.last_name,
+      pixelParams: { content_name: 'Strategy call booked' },
+      customData: { content_name: 'Strategy call booked' },
+    });
     navigate('/post-booking', { replace: true });
   }, [navigate]);
 

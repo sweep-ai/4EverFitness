@@ -1,5 +1,13 @@
 {
   "rewrites": [
     { "source": "/((?!api/|dm\\.html).*)", "destination": "/index.html" }
-  ]
+  ],
+  "functions": {
+    "api/submit.js": {
+      "includeFiles": "api/lib/**"
+    },
+    "api/capi.js": {
+      "includeFiles": "api/lib/**"
+    }
+  }
 }

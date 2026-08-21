@@ -32,7 +32,10 @@
       s.parentNode.insertBefore(t,s)}(window, document,'script',
       'https://connect.facebook.net/en_US/fbevents.js');
       fbq('init', '2648013695654097');
-      fbq('track', 'PageView');
+      window.__META_PV_ID = (window.crypto && window.crypto.randomUUID)
+        ? window.crypto.randomUUID()
+        : String(Date.now());
+      fbq('track', 'PageView', {}, { eventID: window.__META_PV_ID });
     </script>
     <!-- End Meta Pixel Code -->
   </head>

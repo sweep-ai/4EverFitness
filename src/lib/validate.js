@@ -40,6 +40,15 @@ export function countryCallingCode(iso) {
   }
 }
 
+export function splitName(fullName) {
+  const parts = (fullName || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return { first_name: '', last_name: '' };
+  return {
+    first_name: parts[0],
+    last_name: parts.slice(1).join(' ') || parts[0],
+  };
+}
+
 export function validateName(value) {
   const name = (value || '').trim().replace(/\s+/g, ' ');
   if (name.length < 2) return { ok: false, error: 'Enter your full name.' };

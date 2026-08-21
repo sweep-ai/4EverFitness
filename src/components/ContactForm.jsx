@@ -1,10 +1,13 @@
 import { useMemo, useState } from 'react';
 import { saveApplicant } from '../lib/applicant';
-import { FUNNEL_ID, getSessionId, submitLead, trackEvent } from '../lib/sweep';
+import { capiBrowserContext, setLeadEventId, trackPixel } from '../lib/meta';
+import { submitApplication } from '../lib/submit';
+import { FUNNEL_ID, getSessionId, getVisitorId, submitLead, trackEvent } from '../lib/sweep';
 import {
   PHONE_COUNTRIES,
   countryCallingCode,
   formatPhoneInput,
+  splitName,
   validateContact,
 } from '../lib/validate';
 
@@ -44,34 +47,60 @@ export default function ContactForm({ answers, onQualified }) {
 
     setSubmitting(true);
     const sessionId = getSessionId();
+    const visitorId = getVisitorId();
     const idempotencyKey = `${FUNNEL_ID}_${SUBMIT_EVENT}_${sessionId}_root-quiz`;
+    const { first_name, last_name } = splitName(validation.values.name);
+    const contactFields = {
+      name: validation.values.name,
+      first_name,
+      last_name,
+      email: validation.values.email,
+      phone: validation.values.phone,
+      instagram: validation.values.instagram,
+    };
 
     trackEvent(
       SUBMIT_EVENT,
       {
         form_id: 'root-quiz',
+        ...contactFields,
         quiz_answers: answers,
+        contact: contactFields,
       },
       idempotencyKey
     );
 
-    saveApplicant({
-      name: validation.values.name,
-      email: validation.values.email,
-      phone: validation.values.phone,
-      instagram: validation.values.instagram,
-    });
+    saveApplicant(contactFields);
 
-    await submitLead({
-      name: validation.values.name,
-      email: validation.values.email,
-      phone: validation.values.phone,
-      instagram: validation.values.instagram,
-      source: 'quiz',
-      funnel_step_reached: SUBMIT_EVENT,
-      quiz_answers: answers,
-      notes: 'Completed 4EverFitness PrimeShift quiz',
-    });
+    const leadEventId = setLeadEventId();
+    trackPixel('Lead', { content_name: 'PrimeShift quiz' }, leadEventId);
+    if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+      window.fbq('init', import.meta.env.VITE_META_PIXEL_ID || '2648013695654097', {
+        em: contactFields.email,
+        ph: contactFields.phone,
+        fn: first_name,
+        ln: last_name,
+        external_id: visitorId,
+      });
+    }
+
+    await Promise.all([
+      submitLead({
+        ...contactFields,
+        visitor_id: visitorId,
+        session_id: sessionId,
+        source: 'quiz',
+        funnel_step_reached: SUBMIT_EVENT,
+        quiz_answers: answers,
+        notes: `Completed 4EverFitness PrimeShift quiz. Instagram: ${contactFields.instagram}`,
+      }),
+      submitApplication({
+        ...contactFields,
+        quiz_answers: answers,
+        event_id: leadEventId,
+        ...capiBrowserContext(),
+      }),
+    ]);
 
     onQualified();
   }

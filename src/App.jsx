@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import MetaCapiTracker from './components/MetaCapiTracker.jsx';
 import ScrollToTop from './components/ScrollToTop.jsx';
 
 const LandingPage = lazy(() => import('./pages/LandingPage.jsx'));
@@ -10,6 +11,7 @@ export default function App() {
   return (
     <div className="app">
       <ScrollToTop />
+      <MetaCapiTracker />
       <Suspense fallback={<div className="route-fallback">Loading…</div>}>
         <Routes>
           <Route path="/" element={<LandingPage />} />

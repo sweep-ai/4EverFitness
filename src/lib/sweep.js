@@ -126,6 +126,7 @@ export function trackEvent(eventName, metadata = {}, idempotencyKey) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
+        keepalive: true,
       });
     } catch (err) {
       console.error('[sweep] trackEvent failed', eventName, err);
@@ -154,6 +155,7 @@ export async function submitLead(fields) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
+      keepalive: true,
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {

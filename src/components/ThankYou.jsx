@@ -1,10 +1,40 @@
+import { getApplicant } from '../lib/applicant';
 import { getDmKeyword, getInstagramHandle, getManyChatButtonHref, isInstagramInApp } from '../lib/instagram';
+import { generateEventId, sendCapi, trackPixel } from '../lib/meta';
+import { getVisitorId } from '../lib/sweep';
 
 export default function ThankYou() {
   const href = getManyChatButtonHref();
   const keyword = getDmKeyword();
   const handle = getInstagramHandle();
   const inInstagram = isInstagramInApp();
+
+  async function handleManyChatClick(event) {
+    event.preventDefault();
+    const applicant = getApplicant() || {};
+    const eventId = generateEventId('lead_manychat');
+    const params = { content_name: 'ManyChat DM' };
+    trackPixel('Lead', params, eventId);
+    await sendCapi({
+      eventName: 'Lead',
+      eventId,
+      visitor_id: getVisitorId(),
+      email: applicant.email,
+      phone: applicant.phone,
+      first_name: applicant.first_name,
+      last_name: applicant.last_name,
+      customData: params,
+    });
+    try {
+      if (window.top && window.top !== window.self) {
+        window.top.location.assign(href);
+        return;
+      }
+    } catch {
+      /* cross-origin frame */
+    }
+    window.location.assign(href);
+  }
 
   return (
     <section className="qualify">
@@ -26,7 +56,7 @@ export default function ThankYou() {
           </>
         )}
       </p>
-      <a className="manychat-cta" href={href} target="_top" rel="noopener">
+      <a className="manychat-cta" href={href} target="_top" rel="noopener" onClick={handleManyChatClick}>
         Message me "<strong className="dm-keyword">{keyword}</strong>" to book 
       </a>
       <p className="qualify-hint">

@@ -2,7 +2,9 @@ import { useEffect } from 'react';
 import Footer from '../components/Footer.jsx';
 import Header from '../components/Header.jsx';
 import WistiaPlayer from '../components/WistiaPlayer.jsx';
-import { trackEvent } from '../lib/sweep';
+import { getApplicant } from '../lib/applicant';
+import { dualFire, getScheduleEventId, setScheduleEventId } from '../lib/meta';
+import { getVisitorId, trackEvent } from '../lib/sweep';
 
 const POST_BOOKING_VIEW = import.meta.env.VITE_EVT_POST_BOOKING_VIEW || 'post_booking_page_view';
 const CONFIRM_PHONE = '+14074263304';
@@ -45,6 +47,18 @@ function GuideCard({ src, alt, caption, roomy = false }) {
 export default function PostBookingPage() {
   useEffect(() => {
     trackEvent(POST_BOOKING_VIEW, { page_id: 'post-booking' });
+    const applicant = getApplicant();
+    const scheduleEventId = getScheduleEventId() || setScheduleEventId();
+    dualFire('Schedule', {
+      eventId: scheduleEventId,
+      visitor_id: getVisitorId(),
+      email: applicant?.email,
+      phone: applicant?.phone,
+      first_name: applicant?.first_name,
+      last_name: applicant?.last_name,
+      pixelParams: { content_name: 'Post-booking' },
+      customData: { content_name: 'Post-booking' },
+    });
 
     const robots = document.querySelector('meta[name="robots"]');
     const previous = robots?.getAttribute('content') ?? '';
